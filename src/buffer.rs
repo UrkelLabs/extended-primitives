@@ -1,6 +1,21 @@
 use crate::{Hash, Uint256};
 use hex::encode;
+use std::fmt;
 use std::ops;
+
+pub enum Error {
+    OutOfBounds,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Error::OutOfBounds => write!(f, "Read Out of Bounds"),
+        }
+    }
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 //Our version of Buffer that is implemented in bio - > https://github.com/bcoin-org/bufio
 #[derive(Default, Debug, PartialEq, Clone)]
@@ -13,6 +28,11 @@ impl Buffer {
     pub fn new() -> Self {
         Buffer::default()
     }
+
+    //Accept anything that implements into buffer.
+    // pub fn new_with() -> Self {
+
+    // }
 
     //Unsigned Integers - Little Endian
     pub fn write_u8(&mut self, data: u8) {
@@ -125,6 +145,68 @@ impl Buffer {
     //Return Hex string of the buffer, Consumes the Hex
     pub fn into_hex(self) -> String {
         encode(self.data)
+    }
+
+    //Check for length
+    pub fn check(&self, size: usize) -> Result<()> {
+        if self.offset + size > self.data.len() {
+            return Err(Error::OutOfBounds);
+        }
+        Ok(())
+    }
+
+    //These can probably all be macro'd out.
+    pub fn read_u8(&mut self) -> Result<u8> {
+        self.check(1)?;
+        let result = self.data[self.offset];
+
+        self.offset += 1;
+
+        Ok(result)
+    }
+
+    pub fn read_u16(&mut self) -> Result<u16> {
+        self.check(2)?;
+        let range = self.offset..self.offset + 2;
+
+        let mut buf = [0; 2];
+        buf.copy_from_slice(&self.data[range]);
+
+        let ret = u16::from_le_bytes(buf);
+
+        self.offset += 2;
+
+        Ok(ret)
+    }
+
+    //TODO do we see any need for reading u24s, 48s, etc?
+
+    pub fn read_u32(&mut self) -> Result<u32> {
+        self.check(4)?;
+        let range = self.offset..self.offset + 4;
+
+        let mut buf = [0; 4];
+        buf.copy_from_slice(&self.data[range]);
+
+        let ret = u32::from_le_bytes(buf);
+
+        self.offset += 4;
+
+        Ok(ret)
+    }
+
+    pub fn read_u64(&mut self) -> Result<u64> {
+        self.check(8)?;
+        let range = self.offset..self.offset + 8;
+
+        let mut buf = [0; 8];
+        buf.copy_from_slice(&self.data[range]);
+
+        let ret = u64::from_le_bytes(buf);
+
+        self.offset += 8;
+
+        Ok(ret)
     }
 }
 
