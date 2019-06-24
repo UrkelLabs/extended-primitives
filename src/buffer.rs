@@ -4,7 +4,10 @@ use std::ops;
 
 //Our version of Buffer that is implemented in bio - > https://github.com/bcoin-org/bufio
 #[derive(Default, Debug, PartialEq, Clone)]
-pub struct Buffer(Vec<u8>);
+pub struct Buffer {
+    data: Vec<u8>,
+    offset: usize,
+}
 
 impl Buffer {
     pub fn new() -> Self {
@@ -13,135 +16,144 @@ impl Buffer {
 
     //Unsigned Integers - Little Endian
     pub fn write_u8(&mut self, data: u8) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     pub fn write_u16(&mut self, data: u16) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     pub fn write_u32(&mut self, data: u32) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     pub fn write_u64(&mut self, data: u64) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     //TODO u128
 
     pub fn write_u256(&mut self, data: Uint256) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     //Big Endian
     pub fn write_u8_be(&mut self, data: u8) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_u16_be(&mut self, data: u16) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_u32_be(&mut self, data: u32) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_u64_be(&mut self, data: u64) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     //TODO u128, and u256
 
     //Signed Integers
     pub fn write_i8(&mut self, data: u8) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     pub fn write_i16(&mut self, data: u16) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     pub fn write_i32(&mut self, data: u32) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     pub fn write_i64(&mut self, data: u64) {
-        self.0.extend_from_slice(&data.to_le_bytes());
+        self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     //Big Endian
     pub fn write_i8_be(&mut self, data: u8) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_i16_be(&mut self, data: u16) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_i32_be(&mut self, data: u32) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_i64_be(&mut self, data: u64) {
-        self.0.extend_from_slice(&data.to_be_bytes());
+        self.data.extend_from_slice(&data.to_be_bytes());
     }
 
     pub fn write_bytes(&mut self, bytes: &[u8]) {
         //TODO should we clone here or just pass in
-        self.0.extend_from_slice(bytes);
+        self.data.extend_from_slice(bytes);
     }
 
     pub fn write_str(&mut self, string: &str) {
-        self.0.extend_from_slice(string.as_bytes());
+        self.data.extend_from_slice(string.as_bytes());
     }
 
     pub fn write_string(&mut self, string: String) {
-        self.0.extend_from_slice(string.as_bytes());
+        self.data.extend_from_slice(string.as_bytes());
     }
 
     pub fn write_hash(&mut self, hash: Hash) {
-        self.0.extend(&hash.to_array());
+        self.data.extend(&hash.to_array());
     }
 
     pub fn fill(&mut self, value: u8, amount: usize) {
         //See what's faster, this or resize_with/resize TODO
         let fill_amount = vec![value; amount];
-        self.0.extend(fill_amount);
+        self.data.extend(fill_amount);
     }
 
     pub fn extend(&mut self, buffer: Buffer) {
-        self.0.extend_from_slice(&buffer);
+        self.data.extend_from_slice(&buffer);
     }
 
     //Return Hex string of the buffer.
     pub fn to_hex(&self) -> String {
-        encode(&self.0)
+        encode(&self.data)
     }
 
     //Return Hex string of the buffer, Consumes the Hex
     pub fn into_hex(self) -> String {
-        encode(self.0)
+        encode(self.data)
     }
 }
 
 impl From<Vec<u8>> for Buffer {
     fn from(buf: Vec<u8>) -> Self {
-        Buffer(buf)
+        Buffer {
+            data: buf,
+            offset: 0,
+        }
     }
 }
 
 //TODO review, seems inefficent
 impl From<&str> for Buffer {
     fn from(buf: &str) -> Self {
-        Buffer(buf.as_bytes().to_vec())
+        Buffer {
+            data: buf.as_bytes().to_vec(),
+            offset: 0,
+        }
     }
 }
 
 //TODO review, seems inefficent
 impl From<String> for Buffer {
     fn from(buf: String) -> Self {
-        Buffer(buf.as_bytes().to_vec())
+        Buffer {
+            data: buf.as_bytes().to_vec(),
+            offset: 0,
+        }
     }
 }
 
@@ -151,7 +163,7 @@ impl ops::Deref for Buffer {
     type Target = Vec<u8>;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.data
     }
 }
 
@@ -161,7 +173,7 @@ impl ops::Deref for Buffer {
 //having to allocate more mem.
 impl ops::DerefMut for Buffer {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.data
     }
 }
 
@@ -169,7 +181,7 @@ impl ops::DerefMut for Buffer {
 //And thoroughly comment for everyone
 impl AsRef<[u8]> for Buffer {
     fn as_ref(&self) -> &[u8] {
-        &self.0
+        &self.data
     }
 }
 
@@ -177,7 +189,7 @@ impl AsRef<[u8]> for Buffer {
 //And thoroughly comment for everyone
 impl AsMut<[u8]> for Buffer {
     fn as_mut(&mut self) -> &mut [u8] {
-        &mut self.0
+        &mut self.data
     }
 }
 
