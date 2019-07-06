@@ -3,19 +3,28 @@ use hex::encode;
 use std::fmt;
 use std::ops;
 
-pub enum Error {
+#[derive(Debug)]
+pub enum BufferError {
     OutOfBounds,
+    InvalidString(std::string::FromUtf8Error),
 }
 
-impl fmt::Display for Error {
+impl From<std::string::FromUtf8Error> for BufferError {
+    fn from(e: std::string::FromUtf8Error) -> Self {
+        BufferError::InvalidString(e)
+    }
+}
+
+impl fmt::Display for BufferError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::OutOfBounds => write!(f, "Read Out of Bounds"),
+            BufferError::OutOfBounds => write!(f, "Read Out of Bounds"),
+            BufferError::InvalidString(ref e) => write!(f, "Invalid String {}", e),
         }
     }
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, BufferError>;
 
 //Our version of Buffer that is implemented in bio - > https://github.com/bcoin-org/bufio
 #[derive(Default, Debug, PartialEq, Clone)]
@@ -137,6 +146,10 @@ impl Buffer {
         self.data.extend_from_slice(&buffer);
     }
 
+    pub fn extend_from_slice(&mut self, slice: &[u8]) {
+        self.data.extend_from_slice(slice);
+    }
+
     //Return Hex string of the buffer.
     pub fn to_hex(&self) -> String {
         encode(&self.data)
@@ -150,7 +163,7 @@ impl Buffer {
     //Check for length
     pub fn check(&self, size: usize) -> Result<()> {
         if self.offset + size > self.data.len() {
-            return Err(Error::OutOfBounds);
+            return Err(BufferError::OutOfBounds);
         }
         Ok(())
     }
@@ -207,6 +220,37 @@ impl Buffer {
         self.offset += 8;
 
         Ok(ret)
+    }
+
+    pub fn read_string(&mut self, size: usize) -> Result<String> {
+        self.check(size)?;
+
+        let range = self.offset..self.offset + size;
+        let ret = String::from_utf8(self.data[range].to_vec())?;
+
+        self.offset += size;
+
+        Ok(ret)
+    }
+
+    pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>> {
+        self.check(size)?;
+
+        let range = self.offset..self.offset + size;
+        let ret = self.data[range].to_vec();
+
+        self.offset += size;
+
+        Ok(ret)
+    }
+
+    //Essentially shifts the offset to offset += off
+    pub fn seek(&mut self, off: usize) -> Result<()> {
+        self.check(off)?;
+
+        self.offset += off;
+
+        Ok(())
     }
 }
 
