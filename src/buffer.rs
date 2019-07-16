@@ -136,6 +136,28 @@ impl Buffer {
         self.data.extend(&hash.to_array());
     }
 
+    pub fn write_varint(&mut self, data: usize) {
+        if data < 0xFD {
+            self.write_u8(data as u8);
+            return;
+        }
+
+        if data < 0xFFFF {
+            self.write_u8(0xFD);
+            self.write_u16(data as u16);
+            return;
+        }
+
+        if data < 0xFFFFFFFF {
+            self.write_u8(0xFE);
+            self.write_u32(data as u32);
+            return;
+        }
+
+        self.write_u8(0xFF);
+        self.write_u64(data as u64);
+    }
+
     pub fn fill(&mut self, value: u8, amount: usize) {
         //See what's faster, this or resize_with/resize TODO
         let fill_amount = vec![value; amount];
@@ -331,7 +353,7 @@ mod tests {
 
         buffer.write_u32(version);
 
-        assert_eq!(buffer, Buffer([21, 205, 91, 7].to_vec()));
+        assert_eq!(buffer, Buffer::from([21, 205, 91, 7].to_vec()));
     }
 
     #[test]
@@ -353,7 +375,7 @@ mod tests {
 
         buffer.write_u32(version);
 
-        assert_eq!(buffer, Buffer([21, 205, 91, 7].to_vec()));
+        assert_eq!(buffer, Buffer::from([21, 205, 91, 7].to_vec()));
 
         let hex = buffer.to_hex();
 
@@ -368,7 +390,7 @@ mod tests {
 
         buffer.write_u32(version);
 
-        assert_eq!(buffer, Buffer([21, 205, 91, 7].to_vec()));
+        assert_eq!(buffer, Buffer::from([21, 205, 91, 7].to_vec()));
 
         let hex = buffer.into_hex();
 
