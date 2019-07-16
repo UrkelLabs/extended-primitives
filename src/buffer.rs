@@ -301,6 +301,21 @@ impl Buffer {
         Ok(ret)
     }
 
+    pub fn read_hash(&mut self) -> Result<Hash> {
+        self.check(32)?;
+
+        let mut array = [0; 32];
+
+        let range = self.offset..self.offset + 32;
+        array.copy_from_slice(&self.data[range]);
+
+        let hash = Hash::from(array);
+
+        self.offset += 32;
+
+        Ok(hash)
+    }
+
     //Essentially shifts the offset to offset += off
     pub fn seek(&mut self, off: usize) -> Result<()> {
         self.check(off)?;
