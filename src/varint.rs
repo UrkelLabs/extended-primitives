@@ -1,5 +1,5 @@
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
-pub struct VarInt(usize);
+pub struct VarInt(u64);
 
 impl VarInt {
     pub fn encoded_size(&self) -> u32 {
@@ -12,24 +12,15 @@ impl VarInt {
     }
 
     pub fn to_u64(self) -> u64 {
-        self.0 as u64
+        self.0
     }
 }
 
-impl From<u32> for VarInt {
-    fn from(num: u32) -> Self {
-        VarInt(num as usize)
-    }
-}
-
-impl From<u64> for VarInt {
-    fn from(num: u64) -> Self {
-        VarInt(num as usize)
-    }
-}
-
-impl From<usize> for VarInt {
-    fn from(num: usize) -> Self {
-        VarInt(num)
+impl<T> From<T> for VarInt
+where
+    T: Into<u64>,
+{
+    fn from(num: T) -> Self {
+        VarInt(num.into())
     }
 }
