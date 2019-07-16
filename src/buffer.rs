@@ -21,7 +21,7 @@ impl fmt::Display for BufferError {
         match *self {
             BufferError::OutOfBounds => write!(f, "Read Out of Bounds"),
             BufferError::InvalidString(ref e) => write!(f, "Invalid String {}", e),
-            BufferError::NonMinimalVarInt => write!(f "Non Minimal VarInt!"),
+            BufferError::NonMinimalVarInt => write!(f, "Non Minimal VarInt!"),
         }
     }
 }
