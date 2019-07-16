@@ -1,4 +1,4 @@
-use crate::{Hash, Uint256};
+use crate::{Hash, Uint256, VarInt};
 use hex::encode;
 use std::fmt;
 use std::ops;
@@ -7,6 +7,7 @@ use std::ops;
 pub enum BufferError {
     OutOfBounds,
     InvalidString(std::string::FromUtf8Error),
+    NonMinimalVarInt,
 }
 
 impl From<std::string::FromUtf8Error> for BufferError {
@@ -20,6 +21,7 @@ impl fmt::Display for BufferError {
         match *self {
             BufferError::OutOfBounds => write!(f, "Read Out of Bounds"),
             BufferError::InvalidString(ref e) => write!(f, "Invalid String {}", e),
+            BufferError::NonMinimalVarInt => write!(f "Non Minimal VarInt!"),
         }
     }
 }
@@ -242,6 +244,39 @@ impl Buffer {
         self.offset += 8;
 
         Ok(ret)
+    }
+
+    pub fn read_varint(&mut self) -> Result<VarInt> {
+        let len = self.read_u8()?;
+
+        match len {
+            0xFF => {
+                let num = self.read_u64()?;
+                if num < 0x100000000 {
+                    Err(BufferError::NonMinimalVarInt)
+                } else {
+                    Ok(VarInt::from(num))
+                }
+            }
+            0xFE => {
+                let num = self.read_u32()?;
+                if num < 0x10000 {
+                    Err(BufferError::NonMinimalVarInt)
+                } else {
+                    Ok(VarInt::from(num))
+                }
+            }
+            0xFD => {
+                let num = self.read_u16()?;
+                if num < 0xFD {
+                    Err(BufferError::NonMinimalVarInt)
+                } else {
+                    Ok(VarInt::from(num))
+                }
+            }
+
+            len => Ok(VarInt::from(len)),
+        }
     }
 
     pub fn read_string(&mut self, size: usize) -> Result<String> {
