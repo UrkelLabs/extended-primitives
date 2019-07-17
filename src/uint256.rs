@@ -331,6 +331,25 @@ impl Uint256 {
         Uint256(ret)
     }
 
+    //TODO this might or might not work. Needs a lot of testing here.
+    pub fn from_bytes(slice: &[u8]) -> Self {
+        assert!(4 * 8 >= slice.len());
+        assert!(slice.len() % 8 == 0);
+        //TODO this may need to be reworked for various size arrays, test this.
+        let mut ret = [0; 4];
+        let length = slice.len() / 8;
+        //TODO this might have to be reversed
+        for i in 0..length {
+            let start = 0 + i * 8;
+            let end = 8 + i * 8;
+            let mut bytes = [0; 8];
+            bytes.copy_from_slice(&slice[start..end]);
+            ret[i] = u64::from_le_bytes(bytes);
+        }
+
+        Uint256(ret)
+    }
+
     #[inline]
     pub fn increment(&mut self) {
         let &mut Uint256(ref mut arr) = self;
