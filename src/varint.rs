@@ -14,6 +14,10 @@ impl VarInt {
     pub fn to_u64(self) -> u64 {
         self.0
     }
+
+    pub fn as_u64(&self) -> u64 {
+        self.0
+    }
 }
 
 impl<T> From<T> for VarInt
