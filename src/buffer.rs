@@ -246,7 +246,7 @@ impl Buffer {
         Ok(ret)
     }
 
-    pub fn read_256(&mut self) -> Result<Uint256> {
+    pub fn read_u256(&mut self) -> Result<Uint256> {
         self.check(32)?;
 
         let range = self.offset..self.offset + 32;
