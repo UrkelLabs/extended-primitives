@@ -246,6 +246,17 @@ impl Buffer {
         Ok(ret)
     }
 
+    pub fn read_256(&mut self) -> Result<Uint256> {
+        self.check(32)?;
+
+        let range = self.offset..self.offset + 32;
+        let ret = Uint256::from_bytes(&self.data[range]);
+
+        self.offset += 32;
+
+        Ok(ret)
+    }
+
     pub fn read_varint(&mut self) -> Result<VarInt> {
         let len = self.read_u8()?;
 
