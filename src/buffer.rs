@@ -126,6 +126,16 @@ impl Buffer {
         self.data.extend_from_slice(bytes);
     }
 
+    pub fn write_var_bytes(&mut self, bytes: &[u8]) {
+        self.write_varint(bytes.len());
+
+        if bytes.len() == 0 {
+            return;
+        }
+
+        self.data.extend_from_slice(bytes);
+    }
+
     pub fn write_str(&mut self, string: &str) {
         self.data.extend_from_slice(string.as_bytes());
     }
@@ -303,6 +313,20 @@ impl Buffer {
 
     pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>> {
         self.check(size)?;
+
+        let range = self.offset..self.offset + size;
+        let ret = self.data[range].to_vec();
+
+        self.offset += size;
+
+        Ok(ret)
+    }
+
+    pub fn read_var_bytes(&mut self) -> Result<Vec<u8>> {
+        let length = self.read_varint()?;
+
+        //TODO make an as_usize for varint.
+        let size = length.as_u64() as usize;
 
         let range = self.offset..self.offset + size;
         let ret = self.data[range].to_vec();
