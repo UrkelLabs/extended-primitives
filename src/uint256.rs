@@ -85,7 +85,7 @@ impl From<[u8; 32]> for Uint256 {
     fn from(value: [u8; 32]) -> Uint256 {
         let mut ret = [0; 4];
         //TODO this might have to be reversed
-        for i in 0..32 {
+        for i in 0..4 {
             let start = 0 + i * 8;
             let end = 8 + i * 8;
             let mut bytes = [0; 8];
