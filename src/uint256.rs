@@ -22,6 +22,7 @@
 //!macro. I'd rather have the code easier to understand for a newcomer, then have a macro that is
 //!only used for one thing.
 
+use hex::{FromHex, FromHexError};
 use std::fmt;
 
 // When Std::iter::Step is finished being implemented add it to this type. That would allow us to
@@ -77,6 +78,33 @@ impl From<u32> for Uint256 {
         let mut ret = [0; 4];
         ret[0] = value as u64;
         Uint256(ret)
+    }
+}
+
+impl From<[u8; 32]> for Uint256 {
+    fn from(value: [u8; 32]) -> Uint256 {
+        let mut ret = [0; 4];
+        //TODO this might have to be reversed
+        for i in 0..32 {
+            let start = 0 + i * 8;
+            let end = 8 + i * 8;
+            let mut bytes = [0; 8];
+            bytes.copy_from_slice(&value[start..end]);
+            ret[i] = u64::from_be_bytes(bytes);
+        }
+        Uint256(ret)
+    }
+}
+
+impl FromHex for Uint256 {
+    type Error = FromHexError;
+
+    fn from_hex<T: AsRef<[u8]>>(hex: T) -> std::result::Result<Self, Self::Error> {
+        let bytes = hex::decode(hex)?;
+        let mut ret = [0; 32];
+        ret.copy_from_slice(&bytes);
+
+        Ok(Uint256::from(ret))
     }
 }
 
@@ -196,6 +224,11 @@ impl Uint256 {
     /// Returns whether the object, as an array, is empty. Always false.
     pub fn is_empty(&self) -> bool {
         false
+    }
+
+    #[inline]
+    pub fn to_hex(&self) -> String {
+        hex::encode(self.to_le_bytes())
     }
 
     #[inline]
@@ -613,6 +646,7 @@ impl ::std::ops::Shr<usize> for Uint256 {
     }
 }
 
+//TODO convert these to hex?
 impl fmt::Debug for Uint256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let &Uint256(ref data) = self;
@@ -627,6 +661,79 @@ impl fmt::Debug for Uint256 {
 impl fmt::Display for Uint256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         <fmt::Debug>::fmt(self, f)
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl serde::Serialize for Uint256 {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        if s.is_human_readable() {
+            s.serialize_str(&self.to_hex())
+        } else {
+            s.serialize_bytes(&self.to_le_bytes())
+        }
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl<'de> serde::Deserialize<'de> for Uint256 {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Uint256, D::Error> {
+        if d.is_human_readable() {
+            struct HexVisitor;
+
+            impl<'de> serde::de::Visitor<'de> for HexVisitor {
+                type Value = Uint256;
+
+                fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                    formatter.write_str("an ASCII hex string")
+                }
+
+                fn visit_bytes<E>(self, v: &[u8]) -> std::result::Result<Self::Value, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    if let Ok(hex) = ::std::str::from_utf8(v) {
+                        Uint256::from_hex(hex).map_err(E::custom)
+                    } else {
+                        return Err(E::invalid_value(serde::de::Unexpected::Bytes(v), &self));
+                    }
+                }
+
+                fn visit_str<E>(self, v: &str) -> std::result::Result<Self::Value, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    Uint256::from_hex(v).map_err(E::custom)
+                }
+            }
+
+            d.deserialize_str(HexVisitor)
+        } else {
+            struct BytesVisitor;
+
+            impl<'de> ::serde::de::Visitor<'de> for BytesVisitor {
+                type Value = Uint256;
+
+                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    formatter.write_str("a bytestring")
+                }
+
+                fn visit_bytes<E>(self, v: &[u8]) -> std::result::Result<Self::Value, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    if v.len() != 32 {
+                        Err(E::invalid_length(v.len(), &stringify!(32)))
+                    } else {
+                        let mut ret = [0; 32];
+                        ret.copy_from_slice(v);
+                        Ok(Uint256::from(ret))
+                    }
+                }
+            }
+
+            d.deserialize_bytes(BytesVisitor)
+        }
     }
 }
 
@@ -851,3 +958,5 @@ mod tests {
         );
     }
 }
+
+//TODO add tests for serialization here.
