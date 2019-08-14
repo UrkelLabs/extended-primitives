@@ -444,17 +444,6 @@ impl AsMut<[u8]> for Buffer {
     }
 }
 
-// impl ::serde::Serialize for $t {
-//             fn serialize<S: ::serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-//                 use hex::ToHex;
-//                 if s.is_human_readable() {
-//                     s.serialize_str(&self.to_hex())
-//                 } else {
-//                     s.serialize_bytes(&self[..])
-//                 }
-//             }
-//         }
-
 #[cfg(feature = "serialization")]
 impl serde::Serialize for Buffer {
     fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
