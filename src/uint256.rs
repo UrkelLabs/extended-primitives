@@ -101,10 +101,13 @@ impl FromHex for Uint256 {
 
     fn from_hex<T: AsRef<[u8]>>(hex: T) -> std::result::Result<Self, Self::Error> {
         let bytes = hex::decode(hex)?;
-        let mut ret = [0; 32];
-        ret.copy_from_slice(&bytes);
-
-        Ok(Uint256::from(ret))
+        if bytes.len() != 32 {
+            Err(FromHexError::InvalidStringLength)
+        } else {
+            let mut ret = [0; 32];
+            ret.copy_from_slice(&bytes);
+            Ok(Uint256::from(ret))
+        }
     }
 }
 
