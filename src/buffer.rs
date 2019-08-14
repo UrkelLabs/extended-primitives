@@ -1,5 +1,6 @@
 use crate::{Hash, Uint256, VarInt};
-use hex::encode;
+//TODO import and implement toHex as well.
+use hex::{encode, FromHex, FromHexError};
 use std::fmt;
 use std::ops;
 
@@ -361,10 +362,27 @@ impl Buffer {
     }
 }
 
+impl FromHex for Buffer {
+    type Error = FromHexError;
+
+    fn from_hex<T: AsRef<[u8]>>(hex: T) -> std::result::Result<Self, Self::Error> {
+        Ok(Buffer::from(hex::decode(hex)?))
+    }
+}
+
 impl From<Vec<u8>> for Buffer {
     fn from(buf: Vec<u8>) -> Self {
         Buffer {
             data: buf,
+            offset: 0,
+        }
+    }
+}
+
+impl From<&[u8]> for Buffer {
+    fn from(buf: &[u8]) -> Self {
+        Buffer {
+            data: buf.to_vec(),
             offset: 0,
         }
     }
@@ -426,6 +444,84 @@ impl AsMut<[u8]> for Buffer {
     }
 }
 
+// impl ::serde::Serialize for $t {
+//             fn serialize<S: ::serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+//                 use hex::ToHex;
+//                 if s.is_human_readable() {
+//                     s.serialize_str(&self.to_hex())
+//                 } else {
+//                     s.serialize_bytes(&self[..])
+//                 }
+//             }
+//         }
+
+#[cfg(feature = "serialization")]
+impl serde::Serialize for Buffer {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        if s.is_human_readable() {
+            s.serialize_str(&self.to_hex())
+        } else {
+            s.serialize_bytes(&self[..])
+        }
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl<'de> serde::Deserialize<'de> for Buffer {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Buffer, D::Error> {
+        if d.is_human_readable() {
+            struct HexVisitor;
+
+            impl<'de> serde::de::Visitor<'de> for HexVisitor {
+                type Value = Buffer;
+
+                fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                    formatter.write_str("an ASCII hex string")
+                }
+
+                fn visit_bytes<E>(self, v: &[u8]) -> std::result::Result<Self::Value, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    if let Ok(hex) = ::std::str::from_utf8(v) {
+                        Buffer::from_hex(hex).map_err(E::custom)
+                    } else {
+                        return Err(E::invalid_value(serde::de::Unexpected::Bytes(v), &self));
+                    }
+                }
+
+                fn visit_str<E>(self, v: &str) -> std::result::Result<Self::Value, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    Buffer::from_hex(v).map_err(E::custom)
+                }
+            }
+
+            d.deserialize_str(HexVisitor)
+        } else {
+            struct BytesVisitor;
+
+            impl<'de> ::serde::de::Visitor<'de> for BytesVisitor {
+                type Value = Buffer;
+
+                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    formatter.write_str("a bytestring")
+                }
+
+                fn visit_bytes<E>(self, v: &[u8]) -> std::result::Result<Self::Value, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    Ok(Buffer::from(v))
+                }
+            }
+
+            d.deserialize_bytes(BytesVisitor)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -448,8 +544,6 @@ mod tests {
         let mut buffer = Buffer::new();
 
         buffer.write_hash(hash);
-
-        dbg!(buffer);
     }
 
     #[test]
@@ -480,6 +574,25 @@ mod tests {
         let hex = buffer.into_hex();
 
         assert_eq!(hex, "15cd5b07")
+    }
+
+    #[cfg(feature = "serialization")]
+    #[test]
+    fn test_serde() {
+        use serde_test::{assert_tokens, Configure, Token};
+
+        let version: u32 = 123456789;
+
+        let mut buffer = Buffer::new();
+
+        buffer.write_u32(version);
+
+        static version_bytes: [u8; 4] = [21, 205, 91, 7];
+
+        let buffer_readable = buffer.clone();
+
+        assert_tokens(&buffer.compact(), &[Token::BorrowedBytes(&version_bytes)]);
+        assert_tokens(&buffer_readable.readable(), &[Token::Str("15cd5b07")]);
     }
 
 }
