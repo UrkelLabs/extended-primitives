@@ -1,3 +1,5 @@
+#![feature(specialization)]
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct VarInt(u64);
 
@@ -20,11 +22,32 @@ impl VarInt {
     }
 }
 
-impl<T> From<T> for VarInt
-where
-    T: Into<u64>,
-{
-    fn from(num: T) -> Self {
-        VarInt(num.into())
+impl From<usize> for VarInt {
+    fn from(num: usize) -> Self {
+        VarInt(num as u64)
+    }
+}
+
+impl From<u8> for VarInt {
+    fn from(num: u8) -> Self {
+        VarInt(num as u64)
+    }
+}
+
+impl From<u16> for VarInt {
+    fn from(num: u16) -> Self {
+        VarInt(num as u64)
+    }
+}
+
+impl From<u32> for VarInt {
+    fn from(num: u32) -> Self {
+        VarInt(num as u64)
+    }
+}
+
+impl From<u64> for VarInt {
+    fn from(num: u64) -> Self {
+        VarInt(num)
     }
 }
