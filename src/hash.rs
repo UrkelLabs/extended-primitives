@@ -1,7 +1,7 @@
 use hex::{FromHex, FromHexError};
 use std::fmt;
 
-#[derive(Copy, Clone, PartialEq, Eq, Default, PartialOrd, Ord, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Default, PartialOrd, Ord, Hash)]
 //Possibly make this generic on the size?
 //Not sure if we'll need that, but just a reminder
 //I think we might actually want to implement this as a trait?
@@ -160,6 +160,12 @@ impl<'de> serde::Deserialize<'de> for Hash {
 }
 
 impl fmt::Display for Hash {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_hex())
+    }
+}
+
+impl fmt::Debug for FileType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_hex())
     }
