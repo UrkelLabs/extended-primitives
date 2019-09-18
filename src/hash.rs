@@ -165,7 +165,7 @@ impl fmt::Display for Hash {
     }
 }
 
-impl fmt::Debug for FileType {
+impl fmt::Debug for Hash {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_hex())
     }
