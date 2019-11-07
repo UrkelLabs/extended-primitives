@@ -6,12 +6,14 @@ edition = "2018"
 
 [features]
 serialization = ["serde"]
+rng = ["rand"]
 
 [dependencies]
 hex = "0.3.2"
 
 #Optional
 serde = { version="1", optional=true}
+rand = { version="0.7.2", optional=true}
 
 [dev-dependencies]
 serde_test = "1"

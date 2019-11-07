@@ -25,6 +25,9 @@
 use hex::{FromHex, FromHexError};
 use std::fmt;
 
+#[cfg(feature = "rng")]
+use rand::{thread_rng, Rng};
+
 // When Std::iter::Step is finished being implemented add it to this type. That would allow us to
 // use for loops much more easily. Right now it's on nightly only -> https://github.com/rust-lang/rust/issues/42168
 //TODO expose a zero() function on Uint256 -> Right now the only way to get a 0 is to use default()
@@ -203,6 +206,16 @@ impl Clone for Uint256 {
 impl Copy for Uint256 {}
 
 impl Uint256 {
+    #[cfg(feature = "rng")]
+    pub fn random() -> Self {
+        let mut rng = thread_rng();
+
+        let mut arr = [0_u64; 4];
+        rng.fill(&mut arr);
+
+        Uint256(arr)
+    }
+
     #[inline]
     /// Converts the object to a raw pointer
     pub fn as_ptr(&self) -> *const u64 {
@@ -959,6 +972,12 @@ mod tests {
             add << 64,
             Uint256([0, 0xDEADBEEFDEADBEEF, 0xDEADBEEFDEADBEEF, 0])
         );
+    }
+
+    #[test]
+    pub fn uint256_random() {
+        let random = Uint256::random();
+        dbg!(random);
     }
 }
 
