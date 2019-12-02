@@ -583,5 +583,4 @@ mod tests {
         assert_tokens(&buffer.compact(), &[Token::BorrowedBytes(&version_bytes)]);
         assert_tokens(&buffer_readable.readable(), &[Token::Str("15cd5b07")]);
     }
-
 }

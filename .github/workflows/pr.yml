@@ -53,14 +53,14 @@ jobs:
     - name: fmt
       run: cargo fmt --all -- --check
 
-  clippy_check:
-   name: Clippy check
-   runs-on: ubuntu-latest
-   steps:
-     - uses: actions/checkout@v1
-     - name: Install rust
-       run: rustup update beta && rustup default beta
-     - name: Install clippy
-       run: rustup component add clippy
-     - name: clippy
-       run: cargo clippy --all
+  # clippy_check:
+  #  name: Clippy check
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v1
+  #    - name: Install rust
+  #      run: rustup update beta && rustup default beta
+  #    - name: Install clippy
+  #      run: rustup component add clippy
+  #    - name: clippy
+  #      run: cargo clippy --all
