@@ -974,6 +974,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "rng")]
     #[test]
     pub fn uint256_random() {
         let random = Uint256::random();
