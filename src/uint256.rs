@@ -374,7 +374,7 @@ impl Uint256 {
             let end = 8 + i * 8;
             let mut bytes = [0; 8];
             bytes.copy_from_slice(&slice[start..end]);
-            ret[i] = u64::from_be_bytes(bytes);
+            ret[3 - i] = u64::from_be_bytes(bytes);
         }
 
         Uint256(ret)
