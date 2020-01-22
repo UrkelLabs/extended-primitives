@@ -3,6 +3,8 @@ name = "extended-primitives"
 version = "0.2.0"
 authors = ["kilpatty <seanpkilgarriff@gmail.com>"]
 edition = "2018"
+description = "A library providing primitive-like types for use"
+license = "MIT"
 
 [features]
 serialization = ["serde"]
