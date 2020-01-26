@@ -1,4 +1,4 @@
-use hex::{FromHex, FromHexError};
+use encodings::hex::{FromHex, FromHexError};
 use std::fmt;
 
 #[derive(Copy, Clone, PartialEq, Eq, Default, PartialOrd, Ord, Hash)]
@@ -16,37 +16,39 @@ impl Hash {
     }
 
     //TODO remove this and use the trait.
-    pub fn to_string(&self) -> String {
-        hex::encode(self.0)
-    }
+    // pub fn to_string(&self) -> String {
+    //     hex::encode(self.0)
+    // }
+    //
 
-    pub fn to_hex(&self) -> String {
-        hex::encode(self.0)
-    }
+    //@todo see above.
+    // pub fn to_hex(&self) -> String {
+    //     hex::encode(self.0)
+    // }
 }
 
 //
 //We can have it from string, or we can have it be from hex //TODO both might be useful.
 //Need more checks here for length, and errors
-impl From<String> for Hash {
-    fn from(hex: String) -> Self {
-        //Do not unwrap here, we need to catch this error.
-        let raw = hex::decode(hex).unwrap();
-        // let hash: &[32] = &raw;
-        // Hash(raw.try_into())
-        Hash::from(raw)
-    }
-}
+//impl From<String> for Hash {
+//    fn from(hex: String) -> Self {
+//        //Do not unwrap here, we need to catch this error.
+//        let raw = hex::decode(hex).unwrap();
+//        // let hash: &[32] = &raw;
+//        // Hash(raw.try_into())
+//        Hash::from(raw)
+//    }
+//}
 
-impl From<&str> for Hash {
-    fn from(hex: &str) -> Self {
-        //Do not unwrap here, we need to catch this error.
-        let raw = hex::decode(hex).unwrap();
-        // let hash: &[32] = &raw;
-        // Hash(raw.try_into())
-        Hash::from(raw)
-    }
-}
+//impl From<&str> for Hash {
+//    fn from(hex: &str) -> Self {
+//        //Do not unwrap here, we need to catch this error.
+//        let raw = hex::decode(hex).unwrap();
+//        // let hash: &[32] = &raw;
+//        // Hash(raw.try_into())
+//        Hash::from(raw)
+//    }
+//}
 
 //Needs to be TryFrom
 //Need more checks here for length, and errors
@@ -75,9 +77,9 @@ impl AsRef<[u8]> for Hash {
 impl FromHex for Hash {
     type Error = FromHexError;
     fn from_hex<T: AsRef<[u8]>>(hex: T) -> std::result::Result<Self, Self::Error> {
-        let bytes = hex::decode(hex)?;
+        let bytes = Vec::from_hex(hex)?;
         if bytes.len() != 32 {
-            Err(FromHexError::InvalidStringLength)
+            Err(FromHexError::InvalidHexLength)
         } else {
             let mut ret = [0; 32];
             ret.copy_from_slice(&bytes);
@@ -159,16 +161,16 @@ impl<'de> serde::Deserialize<'de> for Hash {
     }
 }
 
-impl fmt::Display for Hash {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_hex())
-    }
-}
+// impl fmt::Display for Hash {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "{}", self.to_hex())
+//     }
+// }
 
-impl fmt::Debug for Hash {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_hex())
-    }
-}
+// impl fmt::Debug for Hash {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "{}", self.to_hex())
+//     }
+// }
 
 //TODO need to test this, and add testing for serde stuff.

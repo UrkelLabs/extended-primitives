@@ -22,7 +22,7 @@
 //!macro. I'd rather have the code easier to understand for a newcomer, then have a macro that is
 //!only used for one thing.
 
-use hex::{FromHex, FromHexError};
+use encodings::hex::{FromHex, FromHexError};
 use std::fmt;
 
 #[cfg(feature = "rng")]
@@ -103,9 +103,12 @@ impl FromHex for Uint256 {
     type Error = FromHexError;
 
     fn from_hex<T: AsRef<[u8]>>(hex: T) -> std::result::Result<Self, Self::Error> {
-        let bytes = hex::decode(hex)?;
+        let bytes = Vec::from_hex(hex)?;
         if bytes.len() != 32 {
-            Err(FromHexError::InvalidStringLength)
+            //@todo this should not return this error here. It should actually return invalid
+            //Uint256 something like that. The Hex isn't invalid length, the result from the hex
+            //is.
+            Err(FromHexError::InvalidHexLength)
         } else {
             let mut ret = [0; 32];
             ret.copy_from_slice(&bytes);
@@ -242,10 +245,11 @@ impl Uint256 {
         false
     }
 
-    #[inline]
-    pub fn to_hex(&self) -> String {
-        hex::encode(self.to_le_bytes())
-    }
+    //@todo
+    // #[inline]
+    // pub fn to_hex(&self) -> String {
+    //     hex::encode(self.to_le_bytes())
+    // }
 
     #[inline]
     /// Returns the underlying bytes.
