@@ -1,14 +1,12 @@
-use encodings::hex::{FromHex, FromHexError};
+use encodings::hex::{FromHex, FromHexError, ToHex};
 use std::fmt;
+use std::str::FromStr;
 
 #[derive(Copy, Clone, PartialEq, Eq, Default, PartialOrd, Ord, Hash)]
 //Possibly make this generic on the size?
 //Not sure if we'll need that, but just a reminder
 //I think we might actually want to implement this as a trait?
 pub struct Hash([u8; 32]);
-//TODO FromStr, and ToStr
-//TODO FromHex, ToHex.
-//TODO Debug, Display, etc should be Hex version.
 
 impl Hash {
     pub fn to_array(&self) -> [u8; 32] {
@@ -16,39 +14,10 @@ impl Hash {
     }
 
     //TODO remove this and use the trait.
-    // pub fn to_string(&self) -> String {
-    //     hex::encode(self.0)
-    // }
-    //
-
-    //@todo see above.
-    // pub fn to_hex(&self) -> String {
-    //     hex::encode(self.0)
-    // }
+    pub fn to_string(&self) -> String {
+        self.to_hex()
+    }
 }
-
-//
-//We can have it from string, or we can have it be from hex //TODO both might be useful.
-//Need more checks here for length, and errors
-//impl From<String> for Hash {
-//    fn from(hex: String) -> Self {
-//        //Do not unwrap here, we need to catch this error.
-//        let raw = hex::decode(hex).unwrap();
-//        // let hash: &[32] = &raw;
-//        // Hash(raw.try_into())
-//        Hash::from(raw)
-//    }
-//}
-
-//impl From<&str> for Hash {
-//    fn from(hex: &str) -> Self {
-//        //Do not unwrap here, we need to catch this error.
-//        let raw = hex::decode(hex).unwrap();
-//        // let hash: &[32] = &raw;
-//        // Hash(raw.try_into())
-//        Hash::from(raw)
-//    }
-//}
 
 //Needs to be TryFrom
 //Need more checks here for length, and errors
@@ -85,6 +54,32 @@ impl FromHex for Hash {
             ret.copy_from_slice(&bytes);
             Ok(Hash::from(ret))
         }
+    }
+}
+
+impl ToHex for Hash {
+    fn to_hex(&self) -> String {
+        self.0.to_vec().to_hex()
+    }
+}
+
+impl FromStr for Hash {
+    type Err = FromHexError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Hash::from_hex(s)?)
+    }
+}
+
+impl fmt::Display for Hash {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_hex())
+    }
+}
+
+impl fmt::Debug for Hash {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_hex())
     }
 }
 
@@ -160,17 +155,5 @@ impl<'de> serde::Deserialize<'de> for Hash {
         }
     }
 }
-
-// impl fmt::Display for Hash {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "{}", self.to_hex())
-//     }
-// }
-
-// impl fmt::Debug for Hash {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "{}", self.to_hex())
-//     }
-// }
 
 //TODO need to test this, and add testing for serde stuff.
