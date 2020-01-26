@@ -1,7 +1,5 @@
 use crate::{Hash, Uint256, VarInt};
-//TODO import and implement toHex as well.
 use encodings::{FromHex, FromHexError, ToHex};
-// use hex::{encode, FromHex, FromHexError};
 use std::fmt;
 use std::ops;
 
@@ -31,7 +29,7 @@ impl fmt::Display for BufferError {
 pub type Result<T> = std::result::Result<T, BufferError>;
 
 //Our version of Buffer that is implemented in bio - > https://github.com/bcoin-org/bufio
-#[derive(Default, Debug, PartialEq, Clone)]
+#[derive(Default, PartialEq, Clone, Eq)]
 pub struct Buffer {
     data: Vec<u8>,
     offset: usize,
@@ -376,25 +374,29 @@ impl From<&[u8]> for Buffer {
     }
 }
 
+//@todo commenting out for now. Not sure how we should implement this. FromStr technically should
+//return an error, but writing a string to a Buffer will never error out. Also it might add some
+//confusion as to whether we are creating the buffer from the raw string or from a hex string. So
+//it might just be in our interest to not have these funcitons period.
 //TODO review, seems inefficent
-impl From<&str> for Buffer {
-    fn from(buf: &str) -> Self {
-        Buffer {
-            data: buf.as_bytes().to_vec(),
-            offset: 0,
-        }
-    }
-}
+//impl From<&str> for Buffer {
+//    fn from(buf: &str) -> Self {
+//        Buffer {
+//            data: buf.as_bytes().to_vec(),
+//            offset: 0,
+//        }
+//    }
+//}
 
-//TODO review, seems inefficent
-impl From<String> for Buffer {
-    fn from(buf: String) -> Self {
-        Buffer {
-            data: buf.as_bytes().to_vec(),
-            offset: 0,
-        }
-    }
-}
+////TODO review, seems inefficent
+//impl From<String> for Buffer {
+//    fn from(buf: String) -> Self {
+//        Buffer {
+//            data: buf.as_bytes().to_vec(),
+//            offset: 0,
+//        }
+//    }
+//}
 
 //Allows us to grab specific bytes from the buffer e.g.
 //grab the merkle tree from the middle of the buffer.
@@ -443,6 +445,28 @@ impl FromHex for Buffer {
 impl ToHex for Buffer {
     fn to_hex(&self) -> String {
         self.data.to_hex()
+    }
+}
+
+impl fmt::Display for Buffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Offset: {}, Buffer: {})",
+            self.offset,
+            self.data.to_hex(),
+        )
+    }
+}
+
+impl fmt::Debug for Buffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Offset: {}, Buffer: {})",
+            self.offset,
+            self.data.to_hex(),
+        )
     }
 }
 
@@ -565,6 +589,16 @@ mod tests {
         let hex = buffer.into_hex();
 
         assert_eq!(hex, "15cd5b07")
+    }
+
+    #[test]
+    fn test_from_hex() {
+        //@todo would really like to support this type of from/toHx.
+        let mut buffer = Buffer::from_hex("FF00").unwrap();
+
+        dbg!(&buffer);
+
+        assert_eq!(buffer, Buffer::from(vec![255, 0]));
     }
 
     #[cfg(feature = "serialization")]
