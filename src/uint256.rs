@@ -22,7 +22,7 @@
 //!macro. I'd rather have the code easier to understand for a newcomer, then have a macro that is
 //!only used for one thing.
 
-use encodings::hex::{FromHex, FromHexError};
+use encodings::hex::{FromHex, FromHexError, ToHex};
 use std::fmt;
 
 #[cfg(feature = "rng")]
@@ -663,6 +663,22 @@ impl ::std::ops::Shr<usize> for Uint256 {
             }
         }
         Uint256(ret)
+    }
+}
+
+//@todo I'm going to preface this with a huge @todo and @smells. We need to thoroughly review the
+//fcuntionality and the endianness of this struct. I've been experiencing weird issues with how we
+//are printing out these strings, and it's even more relevant now that we are playing w/ Targets
+//and block hashes quite often. So Im going to have this fuction work for LE, but I want to come
+//back and review extensively.
+impl ToHex for Uint256 {
+    fn to_hex(&self) -> String {
+        let mut hex = "".to_owned();
+        for bytes in self.0.iter() {
+            hex.push_str(&bytes.to_le_bytes().to_vec().to_hex());
+        }
+
+        hex
     }
 }
 
