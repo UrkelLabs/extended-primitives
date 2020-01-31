@@ -6,6 +6,7 @@ use std::str::FromStr;
 //Possibly make this generic on the size?
 //Not sure if we'll need that, but just a reminder
 //I think we might actually want to implement this as a trait?
+//@todo from<Uint256>
 pub struct Hash([u8; 32]);
 
 impl Hash {

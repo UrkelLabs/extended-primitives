@@ -84,6 +84,14 @@ impl From<u32> for Uint256 {
     }
 }
 
+impl From<u64> for Uint256 {
+    fn from(value: u64) -> Uint256 {
+        let mut ret = [0; 4];
+        ret[0] = value;
+        Uint256(ret)
+    }
+}
+
 impl From<[u8; 32]> for Uint256 {
     fn from(value: [u8; 32]) -> Uint256 {
         let mut ret = [0; 4];
