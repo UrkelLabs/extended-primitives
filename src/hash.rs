@@ -18,6 +18,15 @@ impl Hash {
     pub fn to_string(&self) -> String {
         self.to_hex()
     }
+
+    pub fn is_null(&self) -> bool {
+        for byte in self.0.iter() {
+            if *byte != 0 {
+                return false;
+            }
+        }
+        true
+    }
 }
 
 //Needs to be TryFrom
