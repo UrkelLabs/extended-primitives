@@ -221,6 +221,20 @@ impl Buffer {
         Ok(ret)
     }
 
+    pub fn read_u16_be(&mut self) -> Result<u16> {
+        self.check(2)?;
+        let range = self.offset..self.offset + 2;
+
+        let mut buf = [0; 2];
+        buf.copy_from_slice(&self.data[range]);
+
+        let ret = u16::from_be_bytes(buf);
+
+        self.offset += 2;
+
+        Ok(ret)
+    }
+
     //TODO do we see any need for reading u24s, 48s, etc?
 
     pub fn read_u32(&mut self) -> Result<u32> {
@@ -237,6 +251,20 @@ impl Buffer {
         Ok(ret)
     }
 
+    pub fn read_u32_be(&mut self) -> Result<u32> {
+        self.check(4)?;
+        let range = self.offset..self.offset + 4;
+
+        let mut buf = [0; 4];
+        buf.copy_from_slice(&self.data[range]);
+
+        let ret = u32::from_be_bytes(buf);
+
+        self.offset += 4;
+
+        Ok(ret)
+    }
+
     pub fn read_u64(&mut self) -> Result<u64> {
         self.check(8)?;
         let range = self.offset..self.offset + 8;
@@ -245,6 +273,20 @@ impl Buffer {
         buf.copy_from_slice(&self.data[range]);
 
         let ret = u64::from_le_bytes(buf);
+
+        self.offset += 8;
+
+        Ok(ret)
+    }
+
+    pub fn read_u64_be(&mut self) -> Result<u64> {
+        self.check(8)?;
+        let range = self.offset..self.offset + 8;
+
+        let mut buf = [0; 8];
+        buf.copy_from_slice(&self.data[range]);
+
+        let ret = u64::from_be_bytes(buf);
 
         self.offset += 8;
 
