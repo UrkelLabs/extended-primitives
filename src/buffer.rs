@@ -88,36 +88,36 @@ impl Buffer {
     //TODO u128, and u256
 
     //Signed Integers
-    pub fn write_i8(&mut self, data: u8) {
+    pub fn write_i8(&mut self, data: i8) {
         self.data.extend_from_slice(&data.to_le_bytes());
     }
 
-    pub fn write_i16(&mut self, data: u16) {
+    pub fn write_i16(&mut self, data: i16) {
         self.data.extend_from_slice(&data.to_le_bytes());
     }
 
-    pub fn write_i32(&mut self, data: u32) {
+    pub fn write_i32(&mut self, data: i32) {
         self.data.extend_from_slice(&data.to_le_bytes());
     }
 
-    pub fn write_i64(&mut self, data: u64) {
+    pub fn write_i64(&mut self, data: i64) {
         self.data.extend_from_slice(&data.to_le_bytes());
     }
 
     //Big Endian
-    pub fn write_i8_be(&mut self, data: u8) {
+    pub fn write_i8_be(&mut self, data: i8) {
         self.data.extend_from_slice(&data.to_be_bytes());
     }
 
-    pub fn write_i16_be(&mut self, data: u16) {
+    pub fn write_i16_be(&mut self, data: i16) {
         self.data.extend_from_slice(&data.to_be_bytes());
     }
 
-    pub fn write_i32_be(&mut self, data: u32) {
+    pub fn write_i32_be(&mut self, data: i32) {
         self.data.extend_from_slice(&data.to_be_bytes());
     }
 
-    pub fn write_i64_be(&mut self, data: u64) {
+    pub fn write_i64_be(&mut self, data: i64) {
         self.data.extend_from_slice(&data.to_be_bytes());
     }
 
