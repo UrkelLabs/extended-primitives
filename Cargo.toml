@@ -1,6 +1,6 @@
 [package]
 name = "extended-primitives"
-version = "0.3.5"
+version = "0.3.6"
 authors = ["kilpatty <seanpkilgarriff@gmail.com>"]
 edition = "2018"
 description = "A library providing primitive-like types for use"
