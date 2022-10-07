@@ -3,27 +3,14 @@ use encodings::{FromHex, FromHexError, ToHex};
 use std::fmt;
 use std::ops;
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum BufferError {
+    #[error("Read Out of Bounds")]
     OutOfBounds,
-    InvalidString(std::string::FromUtf8Error),
+    #[error(transparent)]
+    InvalidString(#[from] std::string::FromUtf8Error),
+    #[error("Non-Minimal VarInt")]
     NonMinimalVarInt,
-}
-
-impl From<std::string::FromUtf8Error> for BufferError {
-    fn from(e: std::string::FromUtf8Error) -> Self {
-        BufferError::InvalidString(e)
-    }
-}
-
-impl fmt::Display for BufferError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            BufferError::OutOfBounds => write!(f, "Read Out of Bounds"),
-            BufferError::InvalidString(ref e) => write!(f, "Invalid String {}", e),
-            BufferError::NonMinimalVarInt => write!(f, "Non Minimal VarInt!"),
-        }
-    }
 }
 
 pub type Result<T> = std::result::Result<T, BufferError>;

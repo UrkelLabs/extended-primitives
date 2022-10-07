@@ -12,8 +12,11 @@ rng = ["rand"]
 
 [dependencies]
 
-#Known External
+# Known External
 encodings = "0.1.0"
+
+# Util
+thiserror = "1.0"
 
 #Optional
 serde = { version="1", optional=true}
