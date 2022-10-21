@@ -116,7 +116,7 @@ impl Buffer {
     pub fn write_var_bytes(&mut self, bytes: &[u8]) {
         self.write_varint(bytes.len());
 
-        if bytes.len() == 0 {
+        if bytes.is_empty() {
             return;
         }
 
@@ -132,7 +132,7 @@ impl Buffer {
     }
 
     pub fn write_hash(&mut self, hash: Hash) {
-        self.data.extend(&hash.to_array());
+        self.data.extend(hash.to_array());
     }
 
     pub fn write_varint(&mut self, data: usize) {
@@ -383,6 +383,14 @@ impl Buffer {
 
         Ok(())
     }
+
+    pub fn to_bytes(&self) -> &[u8] {
+        &self.data
+    }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.data.clone()
+    }
 }
 
 impl From<Vec<u8>> for Buffer {
@@ -623,7 +631,7 @@ mod tests {
     #[test]
     fn test_from_hex() {
         //@todo would really like to support this type of from/toHx.
-        let mut buffer = Buffer::from_hex("FF00").unwrap();
+        let buffer = Buffer::from_hex("FF00").unwrap();
 
         dbg!(&buffer);
 

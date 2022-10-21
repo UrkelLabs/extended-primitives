@@ -71,7 +71,7 @@ impl<'a> From<&'a [u64]> for Uint256 {
     fn from(data: &'a [u64]) -> Uint256 {
         assert_eq!(data.len(), 4);
         let mut ret = [0; 4];
-        ret.copy_from_slice(&data[..]);
+        ret.copy_from_slice(data);
         Uint256(ret)
     }
 }
@@ -96,13 +96,13 @@ impl From<[u8; 32]> for Uint256 {
     fn from(value: [u8; 32]) -> Uint256 {
         let mut ret = [0; 4];
         //TODO this might have to be reversed
-        for i in 0..4 {
-            let start = 0 + i * 8;
+        (0..4).for_each(|i| {
+            let start = i * 8;
             let end = 8 + i * 8;
             let mut bytes = [0; 8];
             bytes.copy_from_slice(&value[start..end]);
             ret[i] = u64::from_be_bytes(bytes);
-        }
+        });
         Uint256(ret)
     }
 }
@@ -174,7 +174,7 @@ impl ::std::ops::Index<::std::ops::RangeFull> for Uint256 {
 impl PartialEq for Uint256 {
     #[inline]
     fn eq(&self, other: &Uint256) -> bool {
-        &self[..] == &other[..]
+        self[..] == other[..]
     }
 }
 
@@ -183,7 +183,7 @@ impl Eq for Uint256 {}
 impl PartialOrd for Uint256 {
     #[inline]
     fn partial_cmp(&self, other: &Uint256) -> Option<::std::cmp::Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 
@@ -270,7 +270,7 @@ impl Uint256 {
     //XXX Giant todo, do not forget these, or we will have unstandarized function returns.
     /// Returns the underlying bytes.
     pub fn to_bytes(&self) -> [u64; 4] {
-        self.0.clone()
+        self.0
     }
 
     #[inline]
@@ -300,9 +300,9 @@ impl Uint256 {
     #[inline]
     pub fn max_value() -> Self {
         let mut result = [0; 4];
-        for i in 0..4 {
+        (0..4).for_each(|i| {
             result[i] = u64::max_value();
-        }
+        });
         Uint256(result)
     }
 
@@ -323,7 +323,7 @@ impl Uint256 {
     #[inline]
     pub fn low_u64(&self) -> u64 {
         let &Uint256(ref arr) = self;
-        arr[0] as u64
+        arr[0]
     }
 
     /// Return the least number of bits needed to represent the number
@@ -382,7 +382,7 @@ impl Uint256 {
         let length = slice.len() / 8;
         //TODO this might have to be reversed
         for i in 0..length {
-            let start = 0 + i * 8;
+            let start = i * 8;
             let end = 8 + i * 8;
             let mut bytes = [0; 8];
             bytes.copy_from_slice(&slice[start..end]);
@@ -400,13 +400,13 @@ impl Uint256 {
         let mut ret = [0; 4];
         let length = slice.len() / 8;
         //TODO this might have to be reversed
-        for i in 0..length {
-            let start = 0 + i * 8;
+        (0..length).for_each(|i| {
+            let start = i * 8;
             let end = 8 + i * 8;
             let mut bytes = [0; 8];
             bytes.copy_from_slice(&slice[start..end]);
             ret[i] = u64::from_le_bytes(bytes);
-        }
+        });
 
         Uint256(ret)
     }
@@ -704,7 +704,7 @@ impl fmt::Debug for Uint256 {
 
 impl fmt::Display for Uint256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <fmt::Debug>::fmt(self, f)
+        <dyn fmt::Debug>::fmt(self, f)
     }
 }
 

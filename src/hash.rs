@@ -14,11 +14,6 @@ impl Hash {
         self.0
     }
 
-    //TODO remove this and use the trait.
-    pub fn to_string(&self) -> String {
-        self.to_hex()
-    }
-
     pub fn is_null(&self) -> bool {
         for byte in self.0.iter() {
             if *byte != 0 {
@@ -77,7 +72,7 @@ impl FromStr for Hash {
     type Err = FromHexError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Hash::from_hex(s)?)
+        Hash::from_hex(s)
     }
 }
 
